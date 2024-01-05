@@ -3,28 +3,37 @@ use std::{
     ptr::{null, null_mut},
 };
 
+use crate::AsRaw;
+
+pub type RawProgram = u32;
+pub type RawShader = u32;
+
 pub enum ShaderKind {
     Fragment,
-    Vertex
+    Vertex,
 }
 
 #[derive(Debug)]
 pub struct Shader {
-    inner: u32
+    inner: u32,
 }
 
 impl Shader {
-    pub fn new(kind: ShaderKind,source: &str) -> Self {
+    pub fn new(kind: ShaderKind, source: &str) -> Self {
         let shader_type = match kind {
-            ShaderKind::Fragment => gl::VERTEX_SHADER,
-            ShaderKind::Vertex => gl::FRAGMENT_SHADER,
+            ShaderKind::Fragment => gl::FRAGMENT_SHADER,
+            ShaderKind::Vertex => gl::VERTEX_SHADER,
         };
 
-        let inner = compile_shader(shader_type,source);
+        let inner = compile_shader(shader_type, source);
 
-        Self {
-            inner
-        }
+        Self { inner }
+    }
+}
+
+impl AsRaw<u32> for Shader {
+    fn as_raw(&self) -> u32 {
+        self.inner
     }
 }
 
@@ -37,7 +46,7 @@ impl Drop for Shader {
 }
 
 pub struct Program {
-    inner: u32
+    inner: u32,
 }
 
 impl Program {
@@ -50,9 +59,7 @@ impl Program {
 
         let inner = create_program(&raw);
 
-        Self {
-            inner
-        }
+        Self { inner }
     }
 
     #[inline]
@@ -60,6 +67,12 @@ impl Program {
         unsafe {
             gl::UseProgram(self.inner);
         }
+    }
+}
+
+impl AsRaw<u32> for Program {
+    fn as_raw(&self) -> u32 {
+        self.inner
     }
 }
 
@@ -88,7 +101,7 @@ fn compile_shader(shader_type: u32, source: &str) -> u32 {
             gl::GetShaderInfoLog(shader, length, null_mut(), log.as_mut_ptr());
             let log = CStr::from_ptr(log.as_ptr());
             let log_str = log.to_str().unwrap();
-            panic!("{:#?}", log_str);
+            panic!("{}", log_str);
         }
 
         shader
