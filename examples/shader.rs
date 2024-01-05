@@ -3,7 +3,7 @@ use std::ffi::CString;
 use gl::types::{GLfloat, GLsizeiptr, GLuint, GLboolean};
 use glct::{
     shader::{Program, Shader, ShaderKind},
-    wgl::Wgl, AsRaw,
+    wgl::Wgl, AsRaw, vbo::Vao,
 };
 
 use winit::{
@@ -57,24 +57,14 @@ fn main() -> Result<(), impl std::error::Error> {
     let vertex = Shader::new(ShaderKind::Vertex, VS_SRC);
     let program = Program::create(&[fragment, vertex]);
 
-    let mut vao = 0;
-    let mut vbo = 0;
+
+    let vao = Vao::gen(1);
+    let vbo = vao.vbo();
+    vao.bind();
+    vbo.bind();
+    vbo.data(&VERTEX_DATA);
 
     unsafe {
-        // Create Vertex Array Object
-        gl::GenVertexArrays(1, &mut vao);
-        gl::BindVertexArray(vao);
-
-        // Create a Vertex Buffer Object and copy the vertex data to it
-        gl::GenBuffers(1, &mut vbo);
-        gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
-        gl::BufferData(
-            gl::ARRAY_BUFFER,
-            (VERTEX_DATA.len() * std::mem::size_of::<GLfloat>()) as GLsizeiptr,
-            std::mem::transmute(&VERTEX_DATA[0]),
-            gl::STATIC_DRAW,
-        );
-
         // Use shader program
         program.use_program();
         gl::BindFragDataLocation(program.as_raw(), 0, CString::new("out_color").unwrap().as_ptr());

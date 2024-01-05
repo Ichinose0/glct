@@ -3,6 +3,7 @@ use std::ffi::c_void;
 pub mod shader;
 #[cfg(feature = "wgl")]
 pub mod wgl;
+pub mod vbo;
 
 pub trait AsRaw<R> 
 where
