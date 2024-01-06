@@ -1,13 +1,13 @@
 use std::ffi::c_void;
 
 pub mod shader;
+pub mod vbo;
 #[cfg(feature = "wgl")]
 pub mod wgl;
-pub mod vbo;
 
-pub trait AsRaw<R> 
+pub trait AsRaw<R>
 where
-    R: Sized + Clone + Copy
+    R: Sized + Clone + Copy,
 {
     fn as_raw(&self) -> R;
 }

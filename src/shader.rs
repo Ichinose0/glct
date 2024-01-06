@@ -3,6 +3,8 @@ use std::{
     ptr::{null, null_mut},
 };
 
+use gl::types::GLboolean;
+
 use crate::AsRaw;
 
 pub type RawProgram = u32;
@@ -68,6 +70,21 @@ impl Program {
             gl::UseProgram(self.inner);
         }
     }
+
+    pub fn bind_fragdata_location(&self, location: &str) {
+        let location = CString::new(location).unwrap();
+        unsafe {
+            gl::BindFragDataLocation(self.inner, 0, location.as_ptr());
+        }
+    }
+
+    pub fn get_attribute_location(&self, name: &str) -> Option<AttributeLocation> {
+        let name = CString::new(name).unwrap();
+
+        let inner = unsafe { gl::GetAttribLocation(self.inner, name.as_ptr()) };
+
+        Some(AttributeLocation { inner })
+    }
 }
 
 impl AsRaw<u32> for Program {
@@ -80,6 +97,25 @@ impl Drop for Program {
     fn drop(&mut self) {
         unsafe {
             gl::DeleteProgram(self.inner);
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct AttributeLocation {
+    inner: i32,
+}
+
+impl AttributeLocation {
+    pub fn enable(&self) {
+        unsafe {
+            gl::EnableVertexAttribArray(self.inner as u32);
+        }
+    }
+
+    pub fn vertex_attrib_pointer(&self) {
+        unsafe {
+            gl::VertexAttribPointer(self.inner as u32,2,gl::FLOAT,gl::FALSE as GLboolean,0,null());
         }
     }
 }

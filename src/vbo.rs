@@ -1,21 +1,21 @@
-use gl::types::{GLsizeiptr, GLfloat};
+use gl::types::{GLfloat, GLsizeiptr};
 
 use crate::AsRaw;
 
 pub struct Vao {
     inner: u32,
-    vbo: Vbo
+    vbo: Vbo,
 }
 
 impl Vao {
     pub fn gen(n: usize) -> Self {
         let mut vao = 0;
         unsafe {
-            gl::GenVertexArrays(n as i32,&mut vao);
+            gl::GenVertexArrays(n as i32, &mut vao);
         }
         let mut vbo = 0;
         unsafe {
-            gl::GenBuffers(n as i32,&mut vbo);
+            gl::GenBuffers(n as i32, &mut vbo);
         }
         let vbo = Vbo { inner: vbo };
 
@@ -42,25 +42,30 @@ impl AsRaw<u32> for Vao {
 impl Drop for Vao {
     fn drop(&mut self) {
         unsafe {
-            gl::DeleteVertexArrays(1,&self.inner);
+            gl::DeleteVertexArrays(1, &self.inner);
         }
     }
 }
 
 pub struct Vbo {
-    inner: u32   
+    inner: u32,
 }
 
 impl Vbo {
     pub fn bind(&self) {
         unsafe {
-            gl::BindBuffer(gl::ARRAY_BUFFER,self.inner);    
+            gl::BindBuffer(gl::ARRAY_BUFFER, self.inner);
         }
     }
 
-    pub fn data<T>(&self,data: &[T]) {
+    pub fn data<T>(&self, data: &[T]) {
         unsafe {
-            gl::BufferData(gl::ARRAY_BUFFER,(data.len() * std::mem::size_of::<GLfloat>()) as GLsizeiptr,std::mem::transmute(&data[0]),gl::STATIC_DRAW);
+            gl::BufferData(
+                gl::ARRAY_BUFFER,
+                (data.len() * std::mem::size_of::<GLfloat>()) as GLsizeiptr,
+                std::mem::transmute(&data[0]),
+                gl::STATIC_DRAW,
+            );
         }
     }
 }
@@ -74,7 +79,7 @@ impl AsRaw<u32> for Vbo {
 impl Drop for Vbo {
     fn drop(&mut self) {
         unsafe {
-            gl::DeleteBuffers(1,&self.inner);
+            gl::DeleteBuffers(1, &self.inner);
         }
     }
 }
